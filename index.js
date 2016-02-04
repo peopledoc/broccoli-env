@@ -1,24 +1,54 @@
-exports.getEnv = getEnv
-exports.setEnvs = setEnvs
+var defaultEnvs = ['development', 'production']
 
-var envs = ['development', 'production']
+function Env() {
+  return this.init()
+}
 
-function getEnv () {
-  var env = process.env.BROCCOLI_ENV
-  if (!env) {
-    if (envs.length > 0) {
-      env = envs[0];
+Env.prototype = {
+
+  init: function() {
+    this.setEnvs(defaultEnvs)
+
+    if (process.env.BROCCOLI_ENV) {
+      this.setEnv(process.env.BROCCOLI_ENV)
     }
+
+    return this
+  },
+
+  getEnv: function () {
+    return this.env
+  },
+
+  setEnv: function(env) {
+    if (this.envs.indexOf(env) === -1) {
+      this.env = this.envs[0]
+    }
+    else {
+      this.env = env
+    }
+
+    return this
+  },
+
+  getEnvs: function() {
+    return this.envs
+  },
+
+  setEnvs: function(envs) {
+    if (!Array.isArray(envs)) {
+      throw new Error('Parameter "envs" should be an array')
+    }
+
+    this.envs = envs
+
+    this.setEnv(this.env)
+
+    return this
   }
 
-  if (envs.indexOf(env) === -1) {
-    throw new Error('Environment set to "' + env + '", but BROCCOLI_ENV only accepts one of the following values: ' + envs.join(', '))
-  }
-
-  return env
 }
 
-function setEnvs(e) {
-  envs = e;
-  return this;
-}
+module.exports = (function() {
+  return new Env()
+})()
